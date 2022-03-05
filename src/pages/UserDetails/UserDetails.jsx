@@ -6,17 +6,16 @@ import { Field, Formik, Form } from 'formik';
 import * as Yup from 'yup';
 
 /** Actions */
-import { fetchUsers, setUsers } from '../../app/ducks/users';
+import { fetchUserById, updateUser, addUser } from '../../app/ducks/users';
 import { toastMessage } from '../../app/ducks/toast';
 
 const UserDetails = ({ isNewUser }) => {
   const { userId } = useParams();
-  const { data: users, fetched: fetchedUsers } = useSelector(state => state.users);
+  const { singleUser, fetched: fetchedUser } = useSelector(state => state.users);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [userData, setUserData] = useState();
   const [userDetailsForm, setUserDetailsForm] = useState({
     initialValues: {
       name: '',
@@ -30,35 +29,28 @@ const UserDetails = ({ isNewUser }) => {
   });
 
   /**
-   * If user try to access URL directly, prevent empty case
-   */
-  useEffect(() => {
-    if (!fetchedUsers) dispatch(fetchUsers());
-  }, [fetchedUsers]);
-
-  /**
    * Wait for userId URL param to get the user data from Redux
    */
   useEffect(() => {
-    if (userId && !isNewUser) setUserData(users.find(user => user.id === Number(userId)));
-  }, [userId, users, isNewUser]);
+    if (userId && !isNewUser) dispatch(fetchUserById(userId));
+  }, [userId, isNewUser]);
 
   /**
    * Set the initial values for Formik and the 'onSubmit' fn for for button
    */
   useEffect(() => {
-    if (userData && !isNewUser) {
+    if (Object.keys(singleUser).length && !isNewUser) {
       setUserDetailsForm({
         ...userDetailsForm,
         initialValues: {
           ...userDetailsForm.initialValues,
-          name: userData.name,
-          email: userData.email,
+          name: singleUser.name,
+          email: singleUser.email,
         },
         onSubmit: (values, bag) => handleUpdateUser(values, bag),
       });
     }
-  }, [userData, users, isNewUser]);
+  }, [singleUser, isNewUser]);
 
   /**
    * Set the 'onSubmit' fn for form button
@@ -70,22 +62,13 @@ const UserDetails = ({ isNewUser }) => {
         onSubmit: (values, bag) => handleNewUser(values, bag),
       });
     }
-  }, [users, isNewUser]);
+  }, [isNewUser]);
 
   /**
    * Update the user locally inside the Redux
    */
   const handleUpdateUser = userDataValues => {
-    const updatedUsers = [...users].map(user => {
-      if (user.id === Number(userId)) {
-        return {
-          ...user,
-          ...userDataValues,
-        };
-      }
-      return user;
-    });
-    dispatch(setUsers(updatedUsers));
+    dispatch(updateUser({ userId, userDataValues }));
     dispatch(toastMessage('User data updated successfully!'));
     navigate('/');
   };
@@ -94,7 +77,7 @@ const UserDetails = ({ isNewUser }) => {
    * Add a new user locally inside the Redux
    */
   const handleNewUser = userDataValues => {
-    dispatch(setUsers([...users, { ...userDataValues, id: users[users.length - 1].id + 1 }])); // Just a fake id
+    dispatch(addUser(userDataValues));
     dispatch(toastMessage('User created successfully!'));
     navigate('/');
   };
@@ -112,7 +95,7 @@ const UserDetails = ({ isNewUser }) => {
       <Card sx={{ marginTop: 2, marginBottom: 2 }}>
         <CardHeader title={isNewUser ? 'New user' : 'User details'} />
         <CardContent>
-          {userData || isNewUser ? (
+          {fetchedUser || isNewUser ? (
             <Formik enableReinitialize {...userDetailsForm}>
               {formik => (
                 <Form onSubmit={formik.handleSubmit}>

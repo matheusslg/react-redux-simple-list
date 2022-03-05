@@ -7,6 +7,10 @@ import toastReducer from './ducks/toast';
 export const store = configureStore({
   reducer: {
     users: usersReducer,
-    toast: toastReducer
+    toast: toastReducer,
   },
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });

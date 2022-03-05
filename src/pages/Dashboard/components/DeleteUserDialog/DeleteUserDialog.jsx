@@ -1,14 +1,13 @@
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 
 /** Actions */
-import { setUsers } from '../../../../app/ducks/users';
 import { toastMessage } from '../../../../app/ducks/toast';
+import { deleteUser } from '../../../../app/ducks/users';
 
 const DeleteUserDialog = forwardRef(({ userData }, ref) => {
   const [open, setOpen] = useState(false);
-  const { data: users } = useSelector(state => state.users);
 
   const dispatch = useDispatch();
 
@@ -19,8 +18,7 @@ const DeleteUserDialog = forwardRef(({ userData }, ref) => {
   }));
 
   const handleDeleteUser = () => {
-    const updatedUsers = [...users].filter(user => user.id !== userData.id);
-    dispatch(setUsers(updatedUsers));
+    dispatch(deleteUser(userData.id));
     dispatch(toastMessage('User deleted successfully!'));
     setOpen(false);
   };

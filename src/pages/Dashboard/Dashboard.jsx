@@ -33,13 +33,13 @@ const Dashboard = () => {
    * Fetch users list on the first render
    */
   useEffect(() => {
-    if (!fetchedUsers) dispatch(fetchUsers());
-  }, [fetchedUsers]);
+    if (!users.length) dispatch(fetchUsers());
+  }, [users]);
 
   /**
    * Redirects to the user details page to add a new user
    */
-  const handleNewUser = useCallback(userId => navigate('/user-details/new'), [navigate]);
+  const handleNewUser = useCallback(() => navigate('/user-details/new'), [navigate]);
 
   /**
    * Redirects to the user details page to edit him
@@ -53,48 +53,6 @@ const Dashboard = () => {
     setSelectedUserToDelete(user);
     deleteUserDialogRef.current.show();
   };
-
-  const renderUsersList = useCallback(
-    () => (
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>City</TableCell>
-              <TableCell>Edit</TableCell>
-              <TableCell>Delete</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map(user => (
-              <TableRow key={user.id}>
-                <TableCell>{user.id}</TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.address?.city}</TableCell>
-                <TableCell>
-                  <Button variant="contained" color="warning" onClick={() => handleEditUser(user.id)}>
-                    Edit
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  <Button variant="contained" color="error" onClick={() => handleDeleteUser(user)}>
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    ),
-    [users]
-  );
 
   return (
     <Container>
@@ -113,7 +71,42 @@ const Dashboard = () => {
         <CardContent>
           {fetchedUsers ? (
             users.length ? (
-              renderUsersList()
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>ID</TableCell>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Username</TableCell>
+                      <TableCell>Email</TableCell>
+                      <TableCell>City</TableCell>
+                      <TableCell>Edit</TableCell>
+                      <TableCell>Delete</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {users.map(user => (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.id}</TableCell>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.username}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.address?.city}</TableCell>
+                        <TableCell>
+                          <Button variant="contained" color="warning" onClick={() => handleEditUser(user.id)}>
+                            Edit
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="contained" color="error" onClick={() => handleDeleteUser(user)}>
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             ) : (
               <Box sx={{ display: 'flex' }} justifyContent="center" alignItems="center">
                 No data available in table

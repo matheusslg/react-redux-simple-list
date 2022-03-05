@@ -1,84 +1,114 @@
+import { createSlice, createAsyncThunk, isAnyOf, current } from '@reduxjs/toolkit';
+
 /** Services */
-import { getUsers } from "../../services/users";
+import UserService from '../../services/user';
 
-const INITIAL_STATE = {
-  fetched: false,
-  data: [],
-  error: null,
-};
+const initialState = { fetched: false, data: [], singleUser: {}, error: null };
 
-/**
- * Types
- */
+export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
+  const response = await UserService.getUsers();
+  return response.data;
+});
 
-const Types = {
-  FETCH_USERS_PENDING: "FETCH_USERS_PENDING",
-  FETCH_USERS_SUCCESS: "FETCH_USERS_SUCCESS",
-  FETCH_USERS_ERROR: "FETCH_USERS_ERROR",
-  SET_USERS: "SET_USERS",
-};
+export const fetchUserById = createAsyncThunk('users/fetchUserById', async payload => {
+  const response = await UserService.getUserById(payload);
+  return response.data;
+});
 
-/**
- * Actions
- */
+export const addUser = createAsyncThunk('users/addUser', async payload => {
+  const response = await UserService.addNewUser(payload);
+  return response.data;
+});
 
-const fetchUsersPending = () => {
-  return {
-    type: Types.FETCH_USERS_PENDING,
-  };
-};
+export const updateUser = createAsyncThunk('users/updateUser', async payload => {
+  const { userId, userDataValues } = payload;
+  const response = await UserService.updateUser(userId, userDataValues);
+  return response.data;
+});
 
-const fetchUsersSuccess = () => {
-  return {
-    type: Types.FETCH_USERS_SUCCESS,
-  };
-};
+export const deleteUser = createAsyncThunk('users/deleteUser', async payload => {
+  await UserService.deleteUser(payload);
+  return payload;
+});
 
-const fetchUsersError = (error) => {
-  return {
-    type: Types.FETCH_USERS_ERROR,
-    payload: { error },
-  };
-};
+const usersSlice = createSlice({
+  name: 'users',
+  initialState,
+  extraReducers: builder => {
+    // Get all users
+    builder.addCase(fetchUsers.fulfilled, (state, { payload }) => ({
+      ...state,
+      data: payload,
+      fetched: true,
+    }));
 
-export const setUsers = (users) => {
-  return {
-    type: Types.SET_USERS,
-    payload: { users },
-  };
-};
+    // Get single user by ID
+    builder.addCase(fetchUserById.fulfilled, (state, { payload }) => ({
+      ...state,
+      singleUser: payload,
+      fetched: true,
+    }));
 
-export const fetchUsers = () => {
-  return async (dispatch) => {
-    try {
-      dispatch(fetchUsersPending());
-      const { data } = await getUsers();
-      dispatch(setUsers(data));
-      dispatch(fetchUsersSuccess());
-    } catch (error) {
-      console.log(error);
-      dispatch(fetchUsersError(error));
-    }
-  };
-};
+    // Add user
+    builder.addCase(addUser.fulfilled, (state, { payload: newUserData }) => {
+      const { data } = current(state);
+      return {
+        ...state,
+        data: [...data, newUserData],
+        fetched: true,
+      };
+    });
 
-/**
- * Reducers
- */
+    // Update user
+    builder.addCase(updateUser.fulfilled, (state, { payload: userDataUpdated }) => {
+      const { data } = current(state);
+      return {
+        ...state,
+        data: data.map(user => (user.id === userDataUpdated.id ? { ...user, ...userDataUpdated } : user)),
+        fetched: true,
+      };
+    });
 
-const users = (state = INITIAL_STATE, action) => {
-  switch (action.type) {
-    case Types.FETCH_USERS_PENDING:
-      return { ...state, fetched: false };
-    case Types.FETCH_USERS_SUCCESS:
-      return { ...state, fetched: true };
-    case Types.FETCH_USERS_ERROR:
-      return { ...state, error: action.payload.error };
-    case Types.SET_USERS:
-      return { ...state, data: action.payload.users };
-    default:
-      return state;
-  }
-};
+    // Delete user
+    builder.addCase(deleteUser.fulfilled, (state, { payload: userId }) => {
+      const { data } = current(state);
+      return {
+        ...state,
+        data: data.filter(user => user.id !== userId),
+        fetched: true,
+      };
+    });
 
-export default users;
+    // Handle 'fetched' value pending for every async thunk functions
+    builder.addMatcher(
+      isAnyOf(fetchUsers.pending, fetchUserById.pending, addUser.pending, updateUser.pending, deleteUser.pending),
+      state => ({
+        ...state,
+        fetched: false,
+      })
+    );
+
+    // Handle 'fetched' value rejected(error) for every async thunk function
+    builder.addMatcher(
+      isAnyOf(fetchUsers.rejected, fetchUserById.rejected, addUser.rejected, updateUser.rejected, deleteUser.rejected),
+      (state, { error }) => ({
+        ...state,
+        fetched: true,
+        error,
+      })
+    );
+  },
+  // extraReducers: {
+  //   [fetchUsers.pending]: state => {
+  //     state.fetched = false;
+  //   },
+  //   [fetchUsers.fulfilled]: (state, action) => {
+  //     state.data = action.payload;
+  //   },
+  //   [fetchUsers.rejected]: (state, action) => {
+  //     state.error = action.error;
+  //   },
+  // },
+});
+
+export default usersSlice.reducer;
