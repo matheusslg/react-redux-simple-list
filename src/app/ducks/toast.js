@@ -1,54 +1,21 @@
-const INITIAL_STATE = {
-  open: false,
-  message: null,
-};
+import { createSlice } from '@reduxjs/toolkit';
 
-/**
- * Types
- */
+const initialState = { open: false, message: null };
 
-const Types = {
-  SET_TOAST_MESSAGE: 'SET_TOAST_MESSAGE',
-  CLEAR_TOAST: 'CLEAR_TOAST',
-};
+const toastSlice = createSlice({
+  name: 'toast',
+  initialState,
+  reducers: {
+    toastMessage(state, action) {
+      state.message = action.payload;
+      state.open = true;
+    },
+    clearToast(state) {
+      state.open = false;
+    },
+  },
+});
 
-/**
- * Actions
- */
+export const { toastMessage, clearToast } = toastSlice.actions;
 
-export const toastMessage = message => {
-  return {
-    type: Types.SET_TOAST_MESSAGE,
-    payload: { message },
-  };
-};
-
-export const clearToast = () => {
-  return {
-    type: Types.CLEAR_TOAST,
-  };
-};
-
-/**
- * Reducers
- */
-
-const toast = (state = INITIAL_STATE, action) => {
-  switch (action.type) {
-    case Types.SET_TOAST_MESSAGE:
-      return {
-        ...state,
-        open: true,
-        message: action.payload.message,
-      };
-    case Types.CLEAR_TOAST:
-      return {
-        ...state,
-        open: false,
-      };
-    default:
-      return state;
-  }
-};
-
-export default toast;
+export default toastSlice.reducer;
