@@ -32,7 +32,7 @@ const DeleteUserDialog = forwardRef(({ userData }, ref) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={open} onClose={handleClose} data-testid="DeleteUserDialog">
       <DialogTitle>Do you want to delete this user?</DialogTitle>
       <DialogContent>
         <DialogContentText>

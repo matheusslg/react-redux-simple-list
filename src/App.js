@@ -1,13 +1,14 @@
 import React from 'react';
-import './App.css';
+
+/** Components */
 import Toast from './components/Toast';
 
 /** Routes */
-import Routes from './routes';
+import RoutesComponent from './routes';
 
 const App = () => (
   <>
-    <Routes />
+    <RoutesComponent />
     <Toast />
   </>
 );

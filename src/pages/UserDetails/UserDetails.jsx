@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 import { fetchUserById, updateUser, addUser } from '../../app/ducks/users';
 import { toastMessage } from '../../app/ducks/toast';
 
-const UserDetails = ({ isNewUser }) => {
+const UserDetails = () => {
   const { userId } = useParams();
   const { singleUser, fetched: fetchedUser } = useSelector(state => state.users);
 
@@ -32,14 +32,14 @@ const UserDetails = ({ isNewUser }) => {
    * Wait for userId URL param to get the user data from Redux
    */
   useEffect(() => {
-    if (userId && !isNewUser) dispatch(fetchUserById(userId));
-  }, [userId, isNewUser]);
+    if (userId) dispatch(fetchUserById(userId));
+  }, [userId]);
 
   /**
    * Set the initial values for Formik and the 'onSubmit' fn for for button
    */
   useEffect(() => {
-    if (Object.keys(singleUser).length && !isNewUser) {
+    if (Object.keys(singleUser).length) {
       setUserDetailsForm({
         ...userDetailsForm,
         initialValues: {
@@ -50,26 +50,26 @@ const UserDetails = ({ isNewUser }) => {
         onSubmit: (values, bag) => handleUpdateUser(values, bag),
       });
     }
-  }, [singleUser, isNewUser]);
+  }, [singleUser]);
 
   /**
    * Set the 'onSubmit' fn for form button
    */
   useEffect(() => {
-    if (isNewUser) {
+    if (!userId) {
       setUserDetailsForm({
         ...userDetailsForm,
         onSubmit: (values, bag) => handleNewUser(values, bag),
       });
     }
-  }, [isNewUser]);
+  }, [userId]);
 
   /**
    * Update the user locally inside the Redux
    */
   const handleUpdateUser = userDataValues => {
     dispatch(updateUser({ userId, userDataValues }));
-    dispatch(toastMessage('User data updated successfully!'));
+    dispatch(toastMessage('User updated successfully!'));
     navigate('/');
   };
 
@@ -88,14 +88,14 @@ const UserDetails = ({ isNewUser }) => {
   const handleCancel = useCallback(() => navigate('/'), [navigate]);
 
   return (
-    <Container>
+    <Container data-testid="UserDetails">
       <Typography variant="h4" sx={{ marginTop: 2 }}>
         Dashboard
       </Typography>
       <Card sx={{ marginTop: 2, marginBottom: 2 }}>
-        <CardHeader title={isNewUser ? 'New user' : 'User details'} />
+        <CardHeader title={!userId ? 'New user' : 'User details'} />
         <CardContent>
-          {fetchedUser || isNewUser ? (
+          {fetchedUser || !userId ? (
             <Formik enableReinitialize {...userDetailsForm}>
               {formik => (
                 <Form onSubmit={formik.handleSubmit}>
@@ -120,6 +120,7 @@ const UserDetails = ({ isNewUser }) => {
                               value={formik.values.name}
                               onChange={e => formik.setFieldValue('name', e.target.value)}
                               onBlur={formik.handleBlur}
+                              inputProps={{ 'data-testid': 'NameInput' }}
                             />
                           );
                         }}
@@ -137,6 +138,7 @@ const UserDetails = ({ isNewUser }) => {
                               value={formik.values.email || ''}
                               onChange={e => formik.setFieldValue('email', e.target.value)}
                               onBlur={formik.handleBlur}
+                              inputProps={{ 'data-testid': 'EmailInput' }}
                             />
                           );
                         }}
@@ -144,10 +146,21 @@ const UserDetails = ({ isNewUser }) => {
                     </div>
                   </Box>
                   <Box sx={{ display: 'flex', marginTop: 2 }} justifyContent="flex-end">
-                    <Button sx={{ marginRight: 2 }} variant="contained" color="warning" onClick={handleCancel}>
+                    <Button
+                      sx={{ marginRight: 2 }}
+                      variant="contained"
+                      color="warning"
+                      onClick={handleCancel}
+                      data-testid="CancelUserButton"
+                    >
                       Cancel
                     </Button>
-                    <Button variant="contained" type="submit" disabled={formik.isValidating || !formik.isValid || !formik.dirty}>
+                    <Button
+                      variant="contained"
+                      type="submit"
+                      disabled={formik.isValidating || !formik.isValid || !formik.dirty}
+                      data-testid="SubmitUserButton"
+                    >
                       Submit
                     </Button>
                   </Box>

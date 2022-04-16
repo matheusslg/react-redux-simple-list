@@ -23,8 +23,8 @@ import DeleteUserDialog from './components/DeleteUserDialog';
 
 const Dashboard = () => {
   const { data: users, fetched: fetchedUsers } = useSelector(state => state.users);
-  const deleteUserDialogRef = useRef();
   const [selectedUserToDelete, setSelectedUserToDelete] = useState({});
+  const deleteUserDialogRef = useRef();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,12 +39,12 @@ const Dashboard = () => {
   /**
    * Redirects to the user details page to add a new user
    */
-  const handleNewUser = useCallback(() => navigate('/user-details/new'), [navigate]);
+  const handleNewUser = useCallback(() => navigate('/user'), [navigate]);
 
   /**
    * Redirects to the user details page to edit him
    */
-  const handleEditUser = useCallback(userId => navigate(`/user-details/${userId}`), [navigate]);
+  const handleEditUser = useCallback(userId => navigate(`/user/${userId}`), [navigate]);
 
   /**
    * Store the user to deleted data in a state to use inside the dialog
@@ -55,7 +55,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Container>
+    <Container data-testid="Dashboard">
       <Typography variant="h4" sx={{ marginTop: 2 }}>
         Dashboard
       </Typography>
@@ -63,7 +63,7 @@ const Dashboard = () => {
         <CardHeader
           title="User list"
           action={
-            <Button variant="contained" onClick={handleNewUser}>
+            <Button variant="contained" onClick={handleNewUser} data-testid="AddUserButton">
               Add new
             </Button>
           }
@@ -86,19 +86,19 @@ const Dashboard = () => {
                   </TableHead>
                   <TableBody>
                     {users.map(user => (
-                      <TableRow key={user.id}>
+                      <TableRow key={user.id} data-testid="UserRow">
                         <TableCell>{user.id}</TableCell>
                         <TableCell>{user.name}</TableCell>
                         <TableCell>{user.username}</TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.address?.city}</TableCell>
                         <TableCell>
-                          <Button variant="contained" color="warning" onClick={() => handleEditUser(user.id)}>
+                          <Button variant="contained" color="warning" onClick={() => handleEditUser(user.id)} data-testid="EditButton">
                             Edit
                           </Button>
                         </TableCell>
                         <TableCell>
-                          <Button variant="contained" color="error" onClick={() => handleDeleteUser(user)}>
+                          <Button variant="contained" color="error" onClick={() => handleDeleteUser(user)} data-testid="DeleteButton">
                             Delete
                           </Button>
                         </TableCell>
