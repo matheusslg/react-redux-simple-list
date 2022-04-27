@@ -54,6 +54,63 @@ const Dashboard = () => {
     deleteUserDialogRef.current.show();
   };
 
+  const renderUsersList = () => {
+    if (!fetchedUsers) {
+      return (
+        <Box sx={{ display: 'flex' }} justifyContent="center" alignItems="center">
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (!users.length) {
+      return (
+        <Box sx={{ display: 'flex' }} justifyContent="center" alignItems="center">
+          <Typography variant="h5">No users found</Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Username</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>City</TableCell>
+              <TableCell>Edit</TableCell>
+              <TableCell>Delete</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map(user => (
+              <TableRow key={user.id}>
+                <TableCell>{user.id}</TableCell>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.address?.city}</TableCell>
+                <TableCell>
+                  <Button variant="contained" color="warning" onClick={() => handleEditUser(user.id)}>
+                    Edit
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <Button variant="contained" color="error" onClick={() => handleDeleteUser(user)}>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
   return (
     <Container>
       <Typography variant="h4" sx={{ marginTop: 2 }}>
@@ -68,56 +125,7 @@ const Dashboard = () => {
             </Button>
           }
         />
-        <CardContent>
-          {fetchedUsers ? (
-            users.length ? (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ID</TableCell>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Username</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>City</TableCell>
-                      <TableCell>Edit</TableCell>
-                      <TableCell>Delete</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {users.map(user => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.id}</TableCell>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.username}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.address?.city}</TableCell>
-                        <TableCell>
-                          <Button variant="contained" color="warning" onClick={() => handleEditUser(user.id)}>
-                            Edit
-                          </Button>
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="contained" color="error" onClick={() => handleDeleteUser(user)}>
-                            Delete
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Box sx={{ display: 'flex' }} justifyContent="center" alignItems="center">
-                No data available in table
-              </Box>
-            )
-          ) : (
-            <Box sx={{ display: 'flex' }} justifyContent="center" alignItems="center">
-              <CircularProgress />
-            </Box>
-          )}
-        </CardContent>
+        <CardContent>{renderUsersList()}</CardContent>
       </Card>
       <DeleteUserDialog ref={deleteUserDialogRef} userData={selectedUserToDelete} />
     </Container>
